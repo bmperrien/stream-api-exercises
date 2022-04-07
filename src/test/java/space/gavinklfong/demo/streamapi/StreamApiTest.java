@@ -68,48 +68,91 @@ public class StreamApiTest {
 	@Test
 	@DisplayName("Obtain a list of product with category = “Toys” and then apply 10% discount\"")
 	public void exercise3() {
+		List<Product> result = productRepo.findAll().stream().filter(p ->
+				p.getCategory().equalsIgnoreCase("Toys"))
+				.map(p -> p.withPrice(p.getPrice()* 0.9)).collect(Collectors.toList());
+
+		result.forEach(System.out::println);
 
 	}
 
 	@Test
 	@DisplayName("Obtain a list of products ordered by customer of tier 2 between 01-Feb-2021 and 01-Apr-2021")
 	public void exercise4() {
+		List<Product> result = orderRepo.findAll().stream().filter(o -> o.getCustomer().getTier() == 2)
+				.filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 2, 1)) >= 0)
+				.filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 4, 1)) <= 0)
+				.flatMap(o -> o.getProducts().stream())
+				.distinct()
+				.collect(Collectors.toList());
 
+		result.forEach(System.out::println);
 	}
 
 	@Test
-	@DisplayName("Get the 3 cheapest products of \"Books\" category")
+	@DisplayName("Get the cheapest products of \"Books\" category")
 	public void exercise5() {
+		Optional<Product> result = productRepo.findAll().stream().filter(p -> p.getCategory().equalsIgnoreCase("Books"))
+				.min(Comparator.comparing(Product::getPrice));
+
+		System.out.println(result);
 
 	}
 
 	@Test
 	@DisplayName("Get the 3 most recent placed order")
 	public void exercise6() {
+		List<Order> result = orderRepo.findAll().stream().sorted(Comparator.comparing(Order::getOrderDate)
+				.reversed())
+				.limit(3).collect(Collectors.toList());
 
+		result.forEach(System.out::println);
 	}
 
 	@Test
 	@DisplayName("Get a list of products which was ordered on 15-Mar-2021")
 	public void exercise7() {
+		List<Product> result = orderRepo.findAll().stream()
+				.filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 3, 15)) == 0)
+				.flatMap(o -> o.getProducts().stream())
+				//returns duplicates without distinct
+				.distinct()
+				.collect(Collectors.toList());
+
+		result.forEach(System.out::println);
 
 	}
 
 	@Test
 	@DisplayName("Calculate the total lump of all orders placed in Feb 2021")
 	public void exercise8() {
+		Double result = orderRepo.findAll().stream()
+				.filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 2, 1)) >= 0)
+				.filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 2, 28)) <= 0)
+				.flatMap(o -> o.getProducts().stream())
+				.mapToDouble(Product::getPrice)
+				.sum();
+
+		System.out.println(result);
 
 	}
 
 	@Test
 	@DisplayName("Calculate the average price of all orders placed on 15-Mar-2021")
 	public void exercise9() {
+		Double result = orderRepo.findAll().stream()
+				.filter(o -> o.getOrderDate().compareTo(LocalDate.of(2021, 3, 15)) == 0)
+				.flatMap(o -> o.getProducts().stream())
+				.mapToDouble(Product::getPrice)
+				.average().getAsDouble();
 
+		System.out.println(result);
 	}
 
 	@Test
 	@DisplayName("Obtain statistics summary of all products belong to \"Books\" category")
 	public void exercise10() {
+		
 
 	}
 
