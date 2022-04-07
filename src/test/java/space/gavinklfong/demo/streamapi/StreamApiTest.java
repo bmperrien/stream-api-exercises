@@ -152,19 +152,32 @@ public class StreamApiTest {
 	@Test
 	@DisplayName("Obtain statistics summary of all products belong to \"Books\" category")
 	public void exercise10() {
-		
+		DoubleSummaryStatistics results = productRepo.findAll().stream()
+				.filter(p -> p.getCategory().equalsIgnoreCase("Books"))
+				.mapToDouble(Product::getPrice)
+				.summaryStatistics();
+
+		System.out.println(results);
 
 	}
 
 	@Test
 	@DisplayName("Obtain a mapping of order id and the order's product count")
 	public void exercise11() {
+		Map<Long, Integer> result = orderRepo.findAll().stream()
+				.collect(Collectors.toMap(Order::getId, o -> o.getProducts().size()));
+
+		System.out.println(result);
 
 	}
 
 	@Test
 	@DisplayName("Obtain a data map of customer and list of orders")
 	public void exercise12() {
+		Map<Customer, List<Order>> result = orderRepo.findAll().stream()
+				.collect(Collectors.groupingBy(Order::getCustomer));
+
+		System.out.println(result);
 
 	}
 
@@ -172,6 +185,13 @@ public class StreamApiTest {
 	@Test
 	@DisplayName("Obtain a data map with order and its total price")
 	public void exercise13() {
+		Map<Order, Double> result = orderRepo.findAll().stream()
+				.collect(Collectors.toMap(
+						Function.identity(), o -> o.getProducts().stream()
+								.mapToDouble(Product::getPrice).sum()
+				));
+
+		System.out.println(result);
 
 	}
 
@@ -179,12 +199,23 @@ public class StreamApiTest {
 	@Test
 	@DisplayName("Obtain a data map of product name by category")
 	public void exercise14() {
+		Map<String, List<String>> result = productRepo.findAll().stream()
+				.collect(Collectors.groupingBy(
+						Product::getCategory, Collectors.mapping(Product::getName, Collectors.toList())
+				));
+
+		System.out.println(result);
 
 	}
 
 	@Test
 	@DisplayName("Get the most expensive product per category")
 	void exercise15() {
+		Map<String, Optional<Product>> result = productRepo.findAll().stream()
+				.collect(Collectors.groupingBy(Product::getCategory,
+						Collectors.maxBy(Comparator.comparing(Product::getPrice))));
+
+		System.out.println(result);
 
 	}
 	
